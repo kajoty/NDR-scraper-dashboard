@@ -6,11 +6,6 @@ from datetime import datetime, timedelta
 
 st.set_page_config(page_title="📻 NDR Playlist Dashboard", layout="wide")
 
-# 📊 DSGVO-konformes Besucher-Tracking mit Plausible
-st.markdown("""
-<script async defer data-domain="www.irgendeineurl.de" src="https://stats.irgendeineurl.de/js/plausible.js"></script>
-""", unsafe_allow_html=True)
-
 # PostgreSQL-Konfiguration aus Umgebungsvariablen
 config = {
     "host": os.getenv("PG_HOST"),
