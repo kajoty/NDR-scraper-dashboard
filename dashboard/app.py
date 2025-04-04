@@ -3,9 +3,13 @@ import pandas as pd
 import psycopg2
 import os
 from datetime import datetime, timedelta
-from io import StringIO
 
 st.set_page_config(page_title="📻 NDR Playlist Dashboard", layout="wide")
+
+# 📊 DSGVO-konformes Besucher-Tracking mit Plausible
+st.markdown("""
+<script async defer data-domain="www.irgendeineurl.de" src="https://stats.irgendeineurl.de/js/plausible.js"></script>
+""", unsafe_allow_html=True)
 
 # PostgreSQL-Konfiguration aus Umgebungsvariablen
 config = {
@@ -96,16 +100,6 @@ with tab1:
     st.write(f"🎧 {len(filtered)} Einträge gefunden für `{selected_station}` von `{start_date}` bis `{end_date}`")
 
     st.dataframe(filtered, use_container_width=True)
-
-    # CSV Export
-    csv_buffer = StringIO()
-    filtered.to_csv(csv_buffer, index=False)
-    st.download_button(
-        label="⬇️ Als CSV herunterladen",
-        data=csv_buffer.getvalue(),
-        file_name="playlist_export.csv",
-        mime="text/csv"
-    )
 
     st.subheader("📊 Songs nach Uhrzeit")
 
