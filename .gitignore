@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.pyo
+*.log
+.env
+*.tar.gz
+*.zip
+*.db
+*.sqlite
+scraper-dashboard_backup*

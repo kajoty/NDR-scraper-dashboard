@@ -1,0 +1,9 @@
+services:
+  dashboard:
+    build: ./dashboard
+    container_name: scraper_dashboard
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    env_file:
+      - .env
