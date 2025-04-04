@@ -24,7 +24,7 @@ Ein interaktives Dashboard zur Visualisierung von Radiosender-Playlists (z. B.
 ### 1. Projekt klonen
 
 ```bash
-git clone https://github.com/<dein-username>/NDR-scraper-dashboard.git
+git clone https://github.com/kajoty/NDR-scraper-dashboard.git
 cd NDR-scraper-dashboard
 ```
 
@@ -54,12 +54,6 @@ Das Dashboard ist anschließend erreichbar unter:
 http://localhost:80
 ```
 
-Wenn du Port 80 in der Fritzbox weiterleitest:
-
-```
-http://deineurl.de
-```
-
 ---
 
 ## 📂 Projektstruktur
@@ -86,4 +80,4 @@ docker-compose.yml
 ## 📄 Lizenz
 
 MIT License – feel free to fork, use & improve.  
-Made with ❤️ by [dein Name oder Link zu deinem GitHub](https://github.com/<dein-username>)
+Made with ❤️ by [kajoty](https://github.com/kajoty)
