@@ -62,7 +62,7 @@ df["season"] = df["month"].apply(get_season)
 df["weektype"] = df["played_at"].dt.weekday.apply(lambda x: "Wochenende" if x >= 5 else "Wochentag")
 
 # Tabs
-tab1, tab2 = st.tabs(["📋 Übersicht & Filter", "📈 Saisonale Analyse"])
+tab1, tab2, tab3 = st.tabs(["📋 Übersicht & Filter", "📈 Saisonale Analyse", "🔎 Song-Suche"])
 
 # ========== TAB 1 ========== #
 with tab1:
@@ -83,7 +83,6 @@ with tab1:
         min_value=min_date, max_value=max_date
     )
 
-    # Filter anwenden
     filtered = df[
         (df["played_date"].dt.date >= start_date) &
         (df["played_date"].dt.date <= end_date)
@@ -114,15 +113,12 @@ with tab1:
     else:
         st.info("Keine gültigen Uhrzeiten vorhanden.")
 
-    # Top 10 Künstler
     st.subheader("🎤 Top 10 Künstler")
     st.bar_chart(filtered["artist"].dropna().value_counts().head(10))
 
-    # Top 10 Titel
     st.subheader("🎶 Top 10 Titel")
     st.bar_chart(filtered["title"].dropna().value_counts().head(10))
 
-    # Sender
     st.subheader("📡 Verteilung nach Sender")
     st.bar_chart(filtered["station"].value_counts())
 
@@ -154,3 +150,59 @@ with tab2:
     st.subheader("⏰ Tageszeit-Analyse")
     hourly = df.groupby("hour").size().reset_index(name="Anzahl")
     st.line_chart(hourly.set_index("hour"))
+
+# ========== TAB 3 ========== #
+with tab3:
+    st.title("🔎 Song-Suche")
+
+    st.sidebar.header("🎵 Song auswählen")
+    unique_titles = df["title"].dropna().unique()
+    selected_title = st.sidebar.selectbox("🎶 Titel wählen", sorted(unique_titles))
+
+    start_date, end_date = st.sidebar.date_input(
+        "📅 Zeitraum", value=(df["played_date"].min().date(), df["played_date"].max().date())
+    )
+
+    filtered_song = df[
+        (df["title"] == selected_title) &
+        (df["played_date"].dt.date >= start_date) &
+        (df["played_date"].dt.date <= end_date)
+    ]
+
+    st.write(f"🔍 {len(filtered_song)} Einsätze von **{selected_title}** zwischen {start_date} und {end_date}")
+
+    if filtered_song.empty:
+        st.info("Keine Einsätze für diesen Titel im gewählten Zeitraum gefunden.")
+        st.stop()
+
+    # 📅 Verlauf pro Tag
+    st.subheader("📅 Einsätze pro Tag")
+    timeline = (
+        filtered_song.groupby(filtered_song["played_date"].dt.date)
+        .size()
+        .reset_index(name="Anzahl")
+        .rename(columns={"played_date": "Datum"})
+    )
+    st.line_chart(timeline.set_index("Datum"))
+
+    # ⏰ Uhrzeitenverlauf
+    st.subheader("⏰ Verteilung nach Uhrzeit")
+    if "hour" not in filtered_song.columns:
+        filtered_song["hour"] = filtered_song["played_at"].dt.hour
+    hour_data = (
+        filtered_song.groupby("hour").size().reset_index(name="Anzahl")
+    )
+    st.bar_chart(hour_data.set_index("hour"))
+
+    # 📡 Sender-Verlauf
+    st.subheader("📡 Sender-Analyse")
+    sender_timeline = (
+        filtered_song.groupby(["played_date", "station"])
+        .size()
+        .reset_index(name="Anzahl")
+    )
+    if not sender_timeline.empty:
+        pivot = sender_timeline.pivot(index="played_date", columns="station", values="Anzahl").fillna(0)
+        st.line_chart(pivot)
+    else:
+        st.info("Keine Senderdaten verfügbar für diesen Titel.")
