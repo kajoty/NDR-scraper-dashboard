@@ -1,0 +1,21 @@
+version: "3.9"
+
+services:
+  scraper_dashboard:
+    container_name: scraper_dashboard
+    build: ./dashboard
+    expose:
+      - "80"  # nur im internen Netzwerk sichtbar
+    env_file:
+      - .env
+    restart: unless-stopped
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+    networks:
+      - npm_shared
+
+networks:
+  npm_shared:
+    external: true
+
