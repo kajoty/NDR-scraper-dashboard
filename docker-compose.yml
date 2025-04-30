@@ -18,4 +18,3 @@ services:
 networks:
   npm_shared:
     external: true
-
