@@ -75,9 +75,10 @@ df["season"] = df["month"].map({
 })
 df["weektype"] = df["played_at"].dt.weekday.apply(lambda x: "Wochenende" if x >= 5 else "Wochentag")
 
-tab1, tab2, tab3, tab4, tab5 = st.tabs([
-    "📋 Übersicht & Filter", "📈 Saisonale Analyse", "🔎 Song-Suche", "👤 Künstler-Suche", "🏆 Top 20 des Jahres"
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+    "📋 Übersicht & Filter", "📈 Saisonale Analyse", "🔎 Song-Suche", "👤 Künstler-Suche", "🏆 Top 20 des Jahres", "⏱️ Wiederholrate pro Sender"
 ])
+
 
 # TAB 1
 with tab1:
@@ -221,3 +222,37 @@ with tab5:
     top_titles = year_df["title"].value_counts().sort_values(ascending=False).head(20).reset_index()
     top_titles.columns = ["Titel", "Anzahl"]
     st.bar_chart(top_titles.set_index("Titel"))
+
+with tab6:
+    st.header("⏱️ Wiederholabstände pro Titel und Sender (nur mehrfach gespielte Titel)")
+
+    repeat_df = df[["station", "title", "played_at"]].dropna().copy()
+    repeat_df.sort_values(by=["station", "title", "played_at"], inplace=True)
+
+    # Berechne Wiederholzeiten (in Stunden)
+    repeat_df["diff"] = repeat_df.groupby(["station", "title"])["played_at"].diff().dt.total_seconds() / 3600
+
+    # Nur relevante (mehrfach gespielte Titel mit mind. 1 diff)
+    filtered = repeat_df.dropna(subset=["diff"])
+
+    # Ø Wiederholzeit je Titel & Sender
+    avg_per_title = filtered.groupby(["station", "title"])["diff"].mean().reset_index(name="avg_diff_h")
+
+    # Für jeden Sender ein eigenes Chart
+    for sender in sorted(avg_per_title["station"].unique()):
+        st.subheader(f"📻 {sender}")
+        data = avg_per_title[avg_per_title["station"] == sender].sort_values("avg_diff_h", ascending=False)
+
+        if data.empty:
+            st.info("Keine Daten für diesen Sender.")
+            continue
+
+        fig = px.scatter(
+            data,
+            x="title",
+            y="avg_diff_h",
+            title=f"Ø Wiederholzeit pro Titel bei {sender}",
+            labels={"title": "Titel", "avg_diff_h": "Ø Wiederholzeit (Stunden)"},
+        )
+        fig.update_layout(xaxis_tickangle=-45)
+        st.plotly_chart(fig, use_container_width=True)
